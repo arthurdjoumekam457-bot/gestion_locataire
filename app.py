@@ -41,14 +41,36 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 app = Flask(__name__)
 app.logger.setLevel(logging.INFO)
 
-if os.environ.get("RENDER") and (
-    not os.environ.get("SECRET_KEY") or not os.environ.get("MOT_DE_PASSE_ADMIN")
-):
-    raise RuntimeError("SECRET_KEY et MOT_DE_PASSE_ADMIN doivent être définis sur Render.")
+
+def lire_secret(nom):
+    """Lit un secret de l'environnement ou un fichier secret Render sans journaliser son contenu."""
+    valeur = os.environ.get(nom)
+    if valeur and valeur.strip():
+        return valeur.strip()
+
+    for dossier in (Path("/etc/secrets"), Path(__file__).resolve().parent):
+        chemin = dossier / nom
+        try:
+            valeur = chemin.read_text(encoding="utf-8").strip()
+        except (FileNotFoundError, OSError, UnicodeError):
+            continue
+        if valeur:
+            return valeur
+    return None
+
+
+SECRET_KEY = lire_secret("SECRET_KEY")
+MOT_DE_PASSE_ADMIN = lire_secret("MOT_DE_PASSE_ADMIN")
+
+if os.environ.get("RENDER") and not MOT_DE_PASSE_ADMIN:
+    raise RuntimeError(
+        "Le secret MOT_DE_PASSE_ADMIN est absent. Ajoutez une variable d'environnement "
+        "ou un fichier secret Render nommé MOT_DE_PASSE_ADMIN, puis redéployez."
+    )
 
 # Clé secrète nécessaire pour utiliser les "sessions" (souvenir de connexion admin).
 # Une clé aléatoire de développement évite d’utiliser une valeur de secours connue.
-app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
+app.secret_key = SECRET_KEY or secrets.token_hex(32)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
@@ -116,9 +138,11 @@ def mois_annee_options(nombre_mois=36):
     return options
 
 # Le service refuse de démarrer avec un mot de passe admin connu par défaut.
-MOT_DE_PASSE_ADMIN = os.environ.get("MOT_DE_PASSE_ADMIN")
 if not MOT_DE_PASSE_ADMIN:
-    raise RuntimeError("Définissez un mot de passe fort dans MOT_DE_PASSE_ADMIN avant le lancement.")
+    raise RuntimeError(
+        "Définissez un mot de passe fort dans MOT_DE_PASSE_ADMIN avant le lancement "
+        "(variable d'environnement ou fichier secret)."
+    )
 
 
 @app.before_request
