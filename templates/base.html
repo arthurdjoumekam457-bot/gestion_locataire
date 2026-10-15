@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block titre %}Gestion Locative{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="min-h-screen text-slate-800 antialiased">
+
+    <header class="bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-200/60">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+            <a href="{{ url_for('accueil') }}" class="text-xl font-bold flex items-center gap-2 tracking-wide">
+                <span class="text-2xl">🏠</span>
+                Gestion de Cité
+            </a>
+            <nav class="flex items-center gap-3 text-sm font-medium">
+                {% if session.get('admin_connecte') %}
+                    <a href="{{ url_for('tableau_de_bord_admin') }}" class="hover:text-emerald-100 transition">Tableau de bord</a>
+                    <form method="POST" action="{{ url_for('deconnexion_admin') }}" class="inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <button type="submit" class="bg-emerald-900/70 px-3 py-2 rounded-full hover:bg-emerald-900 transition">Déconnexion</button>
+                    </form>
+                {% else %}
+                    <a href="{{ url_for('connexion_admin') }}" class="bg-emerald-900/70 px-3 py-2 rounded-full hover:bg-emerald-900 transition">Espace Administrateur</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <div class="max-w-6xl mx-auto px-4 mt-5">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for categorie, message in messages %}
+                    <div class="mb-3 px-4 py-2 rounded-xl text-sm font-medium shadow-sm
+                        {% if categorie == 'erreur' %} bg-red-100 text-red-800 border border-red-200
+                        {% else %} bg-emerald-100 text-emerald-800 border border-emerald-200 {% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <main class="max-w-6xl mx-auto px-4 py-6">
+        {% block contenu %}{% endblock %}
+    </main>
+
+    <footer class="text-center text-xs text-slate-500 py-8">
+        Application locale de gestion locative — données stockées dans cite_manager.db<br>
+        © <span id="current-year"></span>
+    </footer>
+    <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+</body>
+</html>

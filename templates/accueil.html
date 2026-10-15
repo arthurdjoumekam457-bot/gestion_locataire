@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block titre %}Accueil — Gestion de Cité{% endblock %}
+
+{% block contenu %}
+<div class="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 text-white shadow-2xl shadow-emerald-200/50 mb-8">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.35),transparent_35%)]"></div>
+    <div class="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-white/15 blur-2xl float-slow"></div>
+    <div class="absolute bottom-0 left-0 h-32 w-32 rounded-full bg-cyan-200/20 blur-2xl float-slow"></div>
+
+    <div class="relative grid grid-cols-1 lg:grid-cols-[1.4fr_0.9fr] gap-8 p-8 md:p-12">
+        <div class="float-in">
+            <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-50">
+                <span class="h-2 w-2 rounded-full bg-emerald-200 pulse-soft"></span>
+                Logements & cocon
+            </span>
+            <h1 class="mt-5 text-4xl md:text-5xl font-black leading-tight">
+                Trouvez un lieu qui ressemble à votre avenir.
+            </h1>
+            <p class="mt-4 max-w-xl text-base md:text-lg text-emerald-50/90">
+                Découvrez des logements modernes, des cités bien situées et une expérience simple pour postuler en quelques minutes.
+            </p>
+
+            <div class="mt-7 flex flex-col sm:flex-row gap-3">
+                <a href="{{ url_for('inscription') }}"
+                   class="inline-flex items-center justify-center bg-white text-emerald-700 px-6 py-3 rounded-full font-bold shadow-lg hover:scale-[1.02] transition">
+                    📝 Postuler maintenant
+                </a>
+                <a href="#cites"
+                   class="inline-flex items-center justify-center border border-white/40 bg-white/10 px-6 py-3 rounded-full font-semibold hover:bg-white/15 transition">
+                    Voir les cités
+                </a>
+            </div>
+
+            <div class="mt-8 flex flex-wrap gap-4 text-sm text-emerald-50">
+                <div class="rounded-2xl bg-white/10 px-4 py-3 backdrop-blur-sm">
+                    <div class="font-bold text-lg">{{ logements_libres }}</div>
+                    <div class="text-emerald-100/80">Logements libres</div>
+                </div>
+                <div class="rounded-2xl bg-white/10 px-4 py-3 backdrop-blur-sm">
+                    <div class="font-bold text-lg">{{ cites|length }}</div>
+                    <div class="text-emerald-100/80">Cités enregistrées</div>
+                </div>
+                <div class="rounded-2xl bg-white/10 px-4 py-3 backdrop-blur-sm">
+                    <div class="font-bold text-lg">{{ total_logements }}</div>
+                    <div class="text-emerald-100/80">Logements au total</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="float-in flex items-center justify-center">
+            <div class="glass-card w-full max-w-sm rounded-[28px] p-4 shadow-2xl border border-white/30">
+                <div class="rounded-[22px] bg-gradient-to-br from-white/70 to-emerald-50 p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <p class="text-xs uppercase tracking-[0.18em] text-gray-500">Popularité</p>
+                            <h3 class="font-bold text-gray-800 text-lg">Cités tendance</h3>
+                        </div>
+                        <div class="rounded-full bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-700">Live</div>
+                    </div>
+
+                    <div class="space-y-3">
+                        {% for cite in cites[:3] %}
+                        <div class="flex items-center justify-between rounded-2xl bg-white p-3 shadow-sm hover-lift">
+                            <div>
+                                <p class="font-semibold text-gray-800">{{ cite.nom_cite }}</p>
+                                <p class="text-xs text-gray-500">{{ cite.quartier }} • {{ cite.ville }}</p>
+                            </div>
+                            <span class="rounded-full bg-emerald-100 text-emerald-700 px-2 py-1 text-xs font-semibold">Cité</span>
+                        </div>
+                        {% else %}
+                        <p class="rounded-2xl bg-white p-4 text-sm text-gray-500">Les cités disponibles seront affichées ici.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-white rounded-3xl shadow-lg p-5 border border-emerald-100 hover-lift">
+        <div class="text-3xl mb-3">🏙️</div>
+        <h3 class="font-bold text-gray-800 mb-2">Des cités bien choisies</h3>
+        <p class="text-sm text-gray-600">Des quartiers accessibles, sécurisés et adaptés à un cadre de vie agréable.</p>
+    </div>
+    <div class="bg-white rounded-3xl shadow-lg p-5 border border-emerald-100 hover-lift">
+        <div class="text-3xl mb-3">💬</div>
+        <h3 class="font-bold text-gray-800 mb-2">Une candidature simple</h3>
+        <p class="text-sm text-gray-600">Déposez rapidement votre demande et suivez votre dossier sans friction.</p>
+    </div>
+    <div class="bg-white rounded-3xl shadow-lg p-5 border border-emerald-100 hover-lift">
+        <div class="text-3xl mb-3">📊</div>
+        <h3 class="font-bold text-gray-800 mb-2">Suivi transparent</h3>
+        <p class="text-sm text-gray-600">Consultez les logements disponibles, la caisse et les locataires en un seul espace.</p>
+    </div>
+</div>
+
+<section id="cites" class="mb-8">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-bold text-gray-800">Nos cités disponibles</h2>
+        <span class="text-sm text-gray-500">{{ cites|length }} cité(s) active(s)</span>
+    </div>
+
+    {% if cites|length == 0 %}
+        <div class="bg-white rounded-3xl shadow p-8 text-gray-500 text-center">
+            Aucune cité enregistrée pour le moment.
+        </div>
+    {% else %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {% for cite in cites %}
+        <div class="group bg-white rounded-[28px] shadow-lg p-5 border border-slate-100 hover-lift overflow-hidden relative">
+            <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400"></div>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-emerald-700">{{ cite.nom_cite }}</h3>
+                    <p class="text-sm text-gray-500">{{ cite.quartier }}, {{ cite.ville }}</p>
+                </div>
+                <span class="rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-xs font-semibold">
+                    À visiter
+                </span>
+            </div>
+            <div class="mt-5 flex items-center justify-between text-sm text-gray-600">
+                <span>📍 Quartier prisé</span>
+                <span class="font-semibold text-emerald-700">Très demandé</span>
+            </div>
+            <div class="mt-5 flex items-center justify-between">
+                <span class="text-xs text-gray-400">Logements disponibles</span>
+                <a href="{{ url_for('inscription') }}" class="text-sm font-semibold text-emerald-700 hover:text-emerald-800">
+                    Postuler →
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

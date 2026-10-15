@@ -1,0 +1,75 @@
+/*
+  Fichier CSS principal du projet.
+  Il contient le style visuel global ainsi que les animations utilisées
+  pour rendre la page plus moderne et agréable à lire.
+*/
+
+/* Active le défilement fluide entre les sections de la page. */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Fond général du site : dégradé doux vert/bleu pour créer une ambiance moderne. */
+body {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 30%, #f8fafc 100%);
+}
+
+/*
+  Classe "glass-card" : effet vitre / translucide.
+  Elle donne un rendu proche des interfaces modernes et élégantes.
+*/
+.glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Apparition douce des éléments quand la page charge. */
+.float-in {
+    animation: floatIn 0.8s ease-out both;
+}
+
+/* Animation lente de déplacement vertical pour les éléments décoratifs. */
+.float-slow {
+    animation: drift 6s ease-in-out infinite;
+}
+
+/* Pulse discret autour d’un élément pour attirer l’attention. */
+.pulse-soft {
+    animation: pulseSoft 3s ease-in-out infinite;
+}
+
+/* Survol des cartes : légère élévation pour donner un rendu plus dynamique. */
+.hover-lift {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 30px rgba(16, 185, 129, 0.14);
+}
+
+/* Animation d’apparition : l’élément part invisible en dessous puis monte. */
+@keyframes floatIn {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Déplacement vertical doux en boucle. */
+@keyframes drift {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Effet lumineux doux : ombre qui s’étire puis disparaît. */
+@keyframes pulseSoft {
+    0%, 100% { box-shadow: 0 0 0 rgba(16, 185, 129, 0.0); }
+    50% { box-shadow: 0 0 18px rgba(16, 185, 129, 0.18); }
+}

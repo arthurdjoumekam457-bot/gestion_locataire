@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block titre %}Candidature Locataire{% endblock %}
+
+{% block contenu %}
+<div class="max-w-lg mx-auto bg-white rounded-lg shadow p-6">
+    <h1 class="text-xl font-bold text-emerald-800 mb-4">Formulaire de candidature</h1>
+    <p class="text-sm text-gray-500 mb-6">
+        Remplissez ce formulaire pour vous proposer comme locataire.
+        L'administrateur de la cité vous contactera pour finaliser votre installation.
+    </p>
+
+    <form method="POST" class="space-y-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+        <div aria-hidden="true" class="absolute -left-[10000px] h-px w-px overflow-hidden">
+            <label for="website">Ne pas remplir ce champ</label>
+            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nom complet</label>
+            <input type="text" name="nom" required
+                   class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-emerald-500 focus:border-emerald-500">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+            <input type="text" name="telephone" required placeholder="ex: 677010203"
+                   class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-emerald-500 focus:border-emerald-500">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Numéro CNI</label>
+            <input type="text" name="cni" required
+                   class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-emerald-500 focus:border-emerald-500">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Cité souhaitée</label>
+            <select name="cite_id" required
+                    class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-emerald-500 focus:border-emerald-500">
+                {% for cite in cites %}
+                    <option value="{{ cite.id }}">{{ cite.nom_cite }} ({{ cite.quartier }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Message (optionnel)</label>
+            <textarea name="message" rows="3"
+                      class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder="Type de logement recherché, date souhaitée..."></textarea>
+        </div>
+
+        <label class="flex items-start gap-2 text-sm text-gray-600">
+            <input type="checkbox" name="consentement" value="oui" required class="mt-1">
+            <span>J’accepte l’utilisation de mes données pour traiter ma candidature et être recontacté.</span>
+        </label>
+
+        <button type="submit"
+                class="w-full bg-emerald-600 text-white py-2 rounded-lg font-semibold hover:bg-emerald-700">
+            Envoyer ma candidature
+        </button>
+    </form>
+</div>
+{% endblock %}

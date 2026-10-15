@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block titre %}Fiche locataire{% endblock %}
+{% block contenu %}
+<div class="max-w-2xl mx-auto rounded-3xl bg-white p-8 shadow-lg">
+    <h1 class="text-2xl font-bold text-emerald-800">Fiche de {{ locataire.nom }}</h1>
+    <dl class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div><dt class="text-sm text-slate-500">Téléphone</dt><dd class="font-semibold">{{ locataire.telephone or 'Non renseigné' }}</dd></div>
+        <div><dt class="text-sm text-slate-500">CNI (accès administrateur)</dt><dd class="font-semibold">{{ locataire.cni or 'Non renseignée' }}</dd></div>
+        <div><dt class="text-sm text-slate-500">Logement</dt><dd class="font-semibold">{{ locataire.numero or 'Aucun logement actif' }}{% if locataire.type_logement %} — {{ locataire.type_logement }}{% endif %}</dd></div>
+        <div><dt class="text-sm text-slate-500">Cité</dt><dd class="font-semibold">{{ locataire.nom_cite or '—' }}</dd></div>
+        <div><dt class="text-sm text-slate-500">Date d’entrée</dt><dd class="font-semibold">{{ locataire.date_entree or '—' }}</dd></div>
+    </dl>
+    <a href="{{ url_for('tableau_de_bord_admin', onglet='locataires') }}" class="mt-8 inline-block text-emerald-700 underline">Retour aux locataires</a>
+</div>
+{% endblock %}

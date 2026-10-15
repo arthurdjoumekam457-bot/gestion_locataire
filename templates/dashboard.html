@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+{% block titre %}Tableau de bord — Administration{% endblock %}
+
+{% block contenu %}
+
+<div class="flex flex-wrap gap-3 justify-end mb-5">
+    <a href="{{ url_for('sauvegarder_base') }}" class="bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">Télécharger une sauvegarde</a>
+</div>
+
+<!-- ==================== ONGLETS DE NAVIGATION ==================== -->
+<div class="flex gap-2 mb-6 border-b border-gray-300">
+    <a href="{{ url_for('tableau_de_bord_admin', onglet='configuration') }}"
+       class="px-4 py-2 font-semibold rounded-t-lg {% if onglet == 'configuration' %} bg-white border border-b-0 border-gray-300 text-emerald-700 {% else %} text-gray-500 hover:text-emerald-700 {% endif %}">
+        ⚙️ 1. Configuration de la cité
+    </a>
+    <a href="{{ url_for('tableau_de_bord_admin', onglet='locataires') }}"
+       class="px-4 py-2 font-semibold rounded-t-lg {% if onglet == 'locataires' %} bg-white border border-b-0 border-gray-300 text-emerald-700 {% else %} text-gray-500 hover:text-emerald-700 {% endif %}">
+        👥 2. Locataires
+    </a>
+    <a href="{{ url_for('tableau_de_bord_admin', onglet='caisse') }}"
+       class="px-4 py-2 font-semibold rounded-t-lg {% if onglet == 'caisse' %} bg-white border border-b-0 border-gray-300 text-emerald-700 {% else %} text-gray-500 hover:text-emerald-700 {% endif %}">
+        💰 3. Caisse & Encaissements
+    </a>
+</div>
+
+
+{# ==========================================================================
+   ONGLET 1 : CONFIGURATION DE LA CITÉ
+   ========================================================================== #}
+{% if onglet == 'configuration' %}
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+
+    <!-- Formulaire : Ajouter une cité -->
+    <div class="bg-white rounded-lg shadow p-5">
+        <h2 class="font-bold text-emerald-800 mb-3">➕ Ajouter une nouvelle Cité</h2>
+        <form method="POST" action="{{ url_for('ajouter_nouvelle_cite') }}" class="space-y-3">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="text" name="nom_cite" placeholder="Nom de la cité (ex: Cité Bonheur)" required
+                   class="w-full border border-gray-300 rounded px-3 py-2">
+            <input type="text" name="quartier" placeholder="Quartier (ex: Ngousso)" required
+                   class="w-full border border-gray-300 rounded px-3 py-2">
+            <input type="text" name="ville" placeholder="Ville (ex: Yaoundé)" required
+                   class="w-full border border-gray-300 rounded px-3 py-2">
+            <button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded font-semibold hover:bg-emerald-700">
+                Ajouter la cité
+            </button>
+        </form>
+    </div>
+
+    <!-- Formulaire : Ajouter un logement -->
+    <div class="bg-white rounded-lg shadow p-5">
+        <h2 class="font-bold text-emerald-800 mb-3">➕ Ajouter un logement</h2>
+        <form method="POST" action="{{ url_for('ajouter_nouveau_logement') }}" class="space-y-3">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <select name="cite_id" required class="w-full border border-gray-300 rounded px-3 py-2">
+                <option value="" disabled selected>Choisir la cité...</option>
+                {% for cite in cites %}
+                    <option value="{{ cite.id }}">{{ cite.nom_cite }}</option>
+                {% endfor %}
+            </select>
+            <input type="text" name="numero" placeholder="Numéro du lot (ex: Studio N°3)" required
+                   class="w-full border border-gray-300 rounded px-3 py-2">
+            <select name="type_logement" required class="w-full border border-gray-300 rounded px-3 py-2">
+                <option value="Chambre">Chambre moderne</option>
+                <option value="Studio">Studio</option>
+                <option value="Appartement">Appartement</option>
+                <option value="Boutique">Boutique</option>
+            </select>
+            <input type="number" name="prix_loyer" placeholder="Prix du loyer (FCFA, ex: 50000)" required
+                   class="w-full border border-gray-300 rounded px-3 py-2">
+            <button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded font-semibold hover:bg-emerald-700">
+                Ajouter le logement
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Tableau de statut par cité -->
+<h2 class="font-bold text-gray-700 mb-3">📊 Statut des cités</h2>
+<div class="space-y-6">
+    {% for stat in statistiques_par_cite %}
+    <div class="bg-white rounded-lg shadow p-5">
+        <div class="flex justify-between items-center mb-3">
+            <h3 class="font-bold text-emerald-700">{{ stat.cite.nom_cite }} — {{ stat.cite.quartier }}</h3>
+            <span class="text-sm font-semibold bg-gray-100 px-3 py-1 rounded-full">
+                Taux d'occupation : {{ stat.nb_occupes }} / {{ stat.nb_total }}
+            </span>
+        </div>
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-left text-gray-500 border-b">
+                    <th class="py-1">Lot</th>
+                    <th class="py-1">Type</th>
+                    <th class="py-1">Loyer (FCFA)</th>
+                    <th class="py-1">Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for logement in stat.liste_logements %}
+                <tr class="border-b last:border-0">
+                    <td class="py-1">{{ logement.numero }}</td>
+                    <td class="py-1">{{ logement.type_logement }}</td>
+                    <td class="py-1">{{ "{:,}".format(logement.prix_loyer).replace(",", " ") }}</td>
+                    <td class="py-1">
+                        {% if logement.statut == 'Occupé' %}
+                            <span class="text-red-600 font-semibold">🔴 Occupé</span>
+                        {% else %}
+                            <span class="text-emerald-600 font-semibold">🟢 Libre</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
+</div>
+
+{% endif %}
+
+
+{# ==========================================================================
+   ONGLET 2 : GESTION DES LOCATAIRES (ENTRÉES / SORTIES)
+   ========================================================================== #}
+{% if onglet == 'locataires' %}
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+
+    <!-- Formulaire : Installer un nouveau locataire -->
+    <div class="bg-white rounded-lg shadow p-5">
+        <h2 class="font-bold text-emerald-800 mb-3">➕ Installer un nouveau locataire</h2>
+        {% if logements_libres|length == 0 %}
+            <p class="text-sm text-gray-500">Aucun logement libre disponible pour le moment.</p>
+        {% else %}
+        <form method="POST" action="{{ url_for('installer_nouveau_locataire') }}" class="space-y-3">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="text" name="nom" placeholder="Nom complet" required
+                   class="w-full border border-gray-300 rounded px-3 py-2">
+            <input type="text" name="telephone" placeholder="Téléphone (ex: 6XXXXXXXX)" required
+                   class="w-full border border-gray-300 rounded px-3 py-2">
+            <input type="text" name="cni" placeholder="Numéro CNI" required
+                   class="w-full border border-gray-300 rounded px-3 py-2">
+            <select name="logement_id" required class="w-full border border-gray-300 rounded px-3 py-2">
+                <option value="" disabled selected>Choisir un logement libre...</option>
+                {% for logement in logements_libres %}
+                    <option value="{{ logement.id }}">
+                        {{ logement.nom_cite }} — {{ logement.numero }} ({{ logement.type_logement }}, {{ "{:,}".format(logement.prix_loyer).replace(",", " ") }} FCFA)
+                    </option>
+                {% endfor %}
+            </select>
+            <input type="number" name="caution_versee" placeholder="Montant de la caution versée (FCFA)" required
+                   class="w-full border border-gray-300 rounded px-3 py-2">
+            <button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded font-semibold hover:bg-emerald-700">
+                Installer le locataire
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    <!-- Candidatures reçues via le formulaire public -->
+    <div class="bg-white rounded-lg shadow p-5">
+        <h2 class="font-bold text-emerald-800 mb-3">📥 Candidatures en attente</h2>
+        {% if candidatures_en_attente|length == 0 %}
+            <p class="text-sm text-gray-500">Aucune candidature en attente.</p>
+        {% else %}
+        <div class="space-y-3">
+            {% for c in candidatures_en_attente %}
+            <div class="border border-gray-200 rounded p-3">
+                <p class="font-semibold">{{ c.nom }} — {{ c.telephone|masquer_telephone }}</p>
+                <p class="text-xs text-gray-500 mb-2">Souhaite : {{ c.nom_cite }} • CNI: {{ c.cni|masquer_cni }} • {{ c.date_demande }}</p>
+                {% if c.message %}<p class="text-xs italic text-gray-500 mb-2">"{{ c.message }}"</p>{% endif %}
+                <form method="POST" action="{{ url_for('traiter_candidature_locataire', candidature_id=c.id) }}" class="flex gap-2">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <select name="logement_id" required class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm">
+                        <option value="" disabled selected>Attribuer un logement...</option>
+                        {% for logement in logements_libres %}
+                            <option value="{{ logement.id }}">{{ logement.nom_cite }} — {{ logement.numero }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="bg-emerald-600 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-emerald-700">
+                        Valider
+                    </button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Tableau des locataires actuels -->
+<h2 class="font-bold text-gray-700 mb-3">👥 Locataires actuels</h2>
+<div class="bg-white rounded-lg shadow overflow-x-auto">
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+            <tr class="text-left text-gray-500">
+                <th class="py-2 px-4">Nom</th>
+                <th class="py-2 px-4">Téléphone</th>
+                <th class="py-2 px-4">CNI</th>
+                <th class="py-2 px-4">Logement</th>
+                <th class="py-2 px-4">Cité</th>
+                <th class="py-2 px-4">Entrée</th>
+                <th class="py-2 px-4">Caution</th>
+                <th class="py-2 px-4"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for l in locataires %}
+            <tr class="border-t">
+                <td class="py-2 px-4 font-medium">{{ l.nom }}</td>
+                <td class="py-2 px-4"><a class="text-emerald-700 underline" href="{{ url_for('fiche_locataire', locataire_id=l.id) }}">{{ l.telephone|masquer_telephone }}</a></td>
+                <td class="py-2 px-4">{{ l.cni|masquer_cni }}</td>
+                <td class="py-2 px-4">{{ l.numero }} ({{ l.type_logement }})</td>
+                <td class="py-2 px-4">{{ l.nom_cite }}</td>
+                <td class="py-2 px-4">{{ l.date_entree }}</td>
+                <td class="py-2 px-4">{{ "{:,}".format(l.caution_versee).replace(",", " ") }} FCFA</td>
+                <td class="py-2 px-4">
+                    <form method="POST" action="{{ url_for('liberer_logement_locataire', locataire_id=l.id) }}"
+                          onsubmit="return confirm('Confirmer la libération du logement de {{ l.nom }} ?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <button type="submit" class="bg-red-100 text-red-700 px-3 py-1 rounded text-xs font-semibold hover:bg-red-200">
+                            Libérer le logement
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="8" class="py-4 px-4 text-center text-gray-400">Aucun locataire installé pour le moment.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<form method="POST" action="{{ url_for('purger_candidatures_traitees') }}" class="my-5" onsubmit="return confirm('Purger les candidatures traitées de plus de 90 jours ?');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button type="submit" class="bg-amber-100 text-amber-800 px-4 py-2 rounded-lg text-sm font-semibold">Purger les candidatures traitées de plus de 90 jours</button>
+</form>
+
+{% endif %}
+
+
+{# ==========================================================================
+   ONGLET 3 : CAISSE & ENCAISSEMENTS
+   ========================================================================== #}
+{% if onglet == 'caisse' %}
+
+<!-- Calculateur automatique -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white rounded-lg shadow p-5 text-center">
+        <p class="text-xs text-gray-500 uppercase mb-1">Mois en cours</p>
+        <p class="text-lg font-bold text-gray-700">{{ mois_courant_libelle }}</p>
+    </div>
+    <div class="bg-blue-50 border border-blue-200 rounded-lg shadow p-5 text-center">
+        <p class="text-xs text-blue-700 uppercase mb-1">Loyers attendus</p>
+        <p class="text-2xl font-bold text-blue-700">{{ "{:,}".format(montant_attendu_ce_mois).replace(",", " ") }} FCFA</p>
+        <p class="mt-1 text-xs text-blue-700">Locataires actuellement installés</p>
+    </div>
+    <div class="bg-emerald-50 border border-emerald-200 rounded-lg shadow p-5 text-center">
+        <p class="text-xs text-emerald-700 uppercase mb-1">Argent encaissé ce mois</p>
+        <p class="text-2xl font-bold text-emerald-700">{{ "{:,}".format(total_encaisse_ce_mois).replace(",", " ") }} FCFA</p>
+        <p class="mt-1 text-xs text-emerald-700">Selon la date réelle du paiement</p>
+    </div>
+    <div class="bg-amber-50 border border-amber-200 rounded-lg shadow p-5 text-center">
+        <p class="text-xs text-amber-700 uppercase mb-1">Affecté à {{ mois_courant_libelle }}</p>
+        <p class="text-2xl font-bold text-amber-700">{{ "{:,}".format(total_affecte_mois_courant).replace(",", " ") }} FCFA</p>
+        <p class="mt-1 text-xs text-amber-700">Paiements saisis pour cette échéance</p>
+    </div>
+    <div class="bg-red-50 border border-red-200 rounded-lg shadow p-5 text-center">
+        <p class="text-xs text-red-700 uppercase mb-1">Reste à percevoir</p>
+        <p class="text-2xl font-bold text-red-700">{{ "{:,}".format(montant_restant_a_percevoir).replace(",", " ") }} FCFA</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
+    <!-- Formulaire d'encaissement -->
+    <div class="bg-white rounded-lg shadow p-5 md:col-span-1">
+        <h2 class="font-bold text-emerald-800 mb-3">💵 Enregistrer un paiement</h2>
+        {% if locataires|length == 0 %}
+            <p class="text-sm text-gray-500">Aucun locataire installé pour le moment.</p>
+        {% else %}
+        <form method="POST" action="{{ url_for('enregistrer_paiement') }}" class="space-y-3">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <select name="locataire_id" required class="w-full border border-gray-300 rounded px-3 py-2">
+                <option value="" disabled selected>Choisir le locataire...</option>
+                {% for l in locataires %}
+                    <option value="{{ l.id }}">{{ l.nom }} — {{ l.numero }} ({{ l.nom_cite }})</option>
+                {% endfor %}
+            </select>
+            <select name="mois_annee" required class="w-full border border-gray-300 rounded px-3 py-2">
+                <option value="" disabled selected>Choisir le mois de loyer payé...</option>
+                {% for mois in mois_annee_options %}
+                    <option value="{{ mois }}" {% if mois == mois_courant_libelle %}selected{% endif %}>{{ mois }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" name="montant" placeholder="Montant (FCFA)" required
+                   class="w-full border border-gray-300 rounded px-3 py-2">
+            <select name="mode_paiement" required class="w-full border border-gray-300 rounded px-3 py-2">
+                <option value="MTN MoMo">MTN MoMo</option>
+                <option value="Orange Money">Orange Money</option>
+                <option value="Espèces">Espèces</option>
+            </select>
+            <button type="submit" class="w-full bg-emerald-600 text-white px-4 py-2 rounded font-semibold hover:bg-emerald-700">
+                Enregistrer le paiement
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    <!-- Historique des paiements -->
+    <div class="bg-white rounded-lg shadow overflow-x-auto md:col-span-2">
+        <div class="p-4 border-b">
+            <h2 class="font-bold text-gray-700">🧾 Historique des paiements</h2>
+        </div>
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50">
+                <tr class="text-left text-gray-500">
+                    <th class="py-2 px-4">Date</th>
+                    <th class="py-2 px-4">Locataire</th>
+                    <th class="py-2 px-4">Mois payé</th>
+                    <th class="py-2 px-4">Montant</th>
+                    <th class="py-2 px-4">Mode</th>
+                    <th class="py-2 px-4">Reçu</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in paiements %}
+                <tr class="border-t">
+                    <td class="py-2 px-4">{{ p.date_paiement }}</td>
+                    <td class="py-2 px-4 font-medium">{{ p.nom_locataire }}</td>
+                    <td class="py-2 px-4">{{ p.mois_annee }}</td>
+                    <td class="py-2 px-4 text-emerald-700 font-semibold">{{ "{:,}".format(p.montant).replace(",", " ") }} FCFA</td>
+                    <td class="py-2 px-4">{{ p.mode_paiement }}</td>
+                    <td class="py-2 px-4"><a class="font-semibold text-orange-600 underline" href="{{ url_for('recu_paiement', paiement_id=p.id) }}">{{ p.reference or 'Voir' }}</a></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="py-4 px-4 text-center text-gray-400">Aucun paiement enregistré pour le moment.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block titre %}Merci{% endblock %}
+
+{% block contenu %}
+<div class="max-w-md mx-auto bg-white rounded-lg shadow p-8 text-center">
+    <div class="text-5xl mb-4">✅</div>
+    <h1 class="text-xl font-bold text-emerald-800 mb-2">Candidature envoyée !</h1>
+    <p class="text-gray-600 mb-6">
+        Votre demande a bien été enregistrée. L'administrateur de la cité vous contactera prochainement.
+    </p>
+    <a href="{{ url_for('accueil') }}" class="text-emerald-700 font-medium hover:underline">
+        ← Retour à l'accueil
+    </a>
+</div>
+{% endblock %}

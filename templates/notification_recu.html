@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block titre %}Reçu prêt à transmettre{% endblock %}
+{% block contenu %}
+<div class="mx-auto max-w-xl rounded-3xl bg-white p-7 shadow-xl sm:p-9">
+    <div class="text-center">
+        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-4xl text-emerald-700">✓</div>
+        <h1 class="mt-4 text-2xl font-black text-slate-800">Le reçu est prêt</h1>
+        <p class="mt-2 text-slate-600">Le reçu de <strong>{{ paiement.nom_locataire }}</strong> peut maintenant lui être transmis.</p>
+        <p class="mt-1 text-sm text-slate-500">Référence : {{ paiement.reference }}</p>
+    </div>
+
+    <section class="mt-7 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <label for="lien-recu" class="block text-sm font-semibold text-slate-700">Lien privé du reçu</label>
+        <div class="mt-2 flex gap-2">
+            <input id="lien-recu" type="url" readonly value="{{ lien_recu }}" class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+            <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('lien-recu').value)" class="rounded-lg bg-slate-700 px-3 py-2 text-sm font-semibold text-white">Copier</button>
+        </div>
+        <p class="mt-2 text-xs text-slate-500">Toute personne ayant ce lien peut voir le reçu. Transmettez-le uniquement au locataire concerné.</p>
+    </section>
+
+    <div class="mt-6 grid gap-3 sm:grid-cols-2">
+        {% if lien_whatsapp %}
+        <a href="{{ lien_whatsapp }}" target="_blank" rel="noopener noreferrer" class="rounded-xl bg-emerald-600 px-4 py-3 text-center font-bold text-white hover:bg-emerald-700">Envoyer via WhatsApp</a>
+        {% else %}
+        <p class="rounded-xl bg-amber-50 px-4 py-3 text-center text-sm text-amber-800">Aucun numéro disponible pour préparer WhatsApp.</p>
+        {% endif %}
+        <a href="{{ url_for('recu_paiement', paiement_id=paiement.id) }}" class="rounded-xl bg-orange-500 px-4 py-3 text-center font-bold text-white hover:bg-orange-600">Ouvrir le reçu</a>
+    </div>
+
+    <p class="mt-5 text-center text-xs text-slate-500">Le site ne peut pas envoyer un SMS/WhatsApp automatiquement sans service de notification configuré. Le bouton WhatsApp ouvre l’application avec un message prérempli; le bailleur confirme l’envoi.</p>
+</div>
+{% endblock %}
